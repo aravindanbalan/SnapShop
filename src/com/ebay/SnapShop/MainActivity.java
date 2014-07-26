@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
+import org.apache.http.entity.mime.MultipartEntity;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -26,11 +27,15 @@ import android.widget.Toast;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.content.ContentBody;
+import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.CoreProtocolPNames;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -47,7 +52,9 @@ public class MainActivity extends Activity
     private Button upload,cancel;
     private Bitmap bitmap;
     private ProgressDialog dialog;
+    String selectedImagePath;
     Uri imageUri;
+    String filePathLoc = null;
 
     MediaPlayer mp=new MediaPlayer();
 
@@ -71,7 +78,7 @@ public class MainActivity extends Activity
                 } else {
                     dialog = ProgressDialog.show(MainActivity.this, "Uploading",
                             "Please wait...", true);
-                    new ImageUploadTask().execute();
+                    new ImageUploadTask(filePathLoc).execute();
                 }
             }
         });
@@ -132,7 +139,7 @@ public class MainActivity extends Activity
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Uri selectedImageUri = null;
-        String filePath = null;
+
         switch (requestCode) {
             case PICK_IMAGE:
                 if (resultCode == Activity.RESULT_OK) {
@@ -157,20 +164,20 @@ public class MainActivity extends Activity
                 String filemanagerstring = selectedImageUri.getPath();
 
                 // MEDIA GALLERY
-                String selectedImagePath = getPath(selectedImageUri);
-
+                selectedImagePath = getPath(selectedImageUri);
+                Log.i("SnapShop","*******Image Url : "+ selectedImagePath);
                 if (selectedImagePath != null) {
-                    filePath = selectedImagePath;
+                    filePathLoc = selectedImagePath;
                 } else if (filemanagerstring != null) {
-                    filePath = filemanagerstring;
+                    filePathLoc = filemanagerstring;
                 } else {
                     Toast.makeText(getApplicationContext(), "Unknown path",
                             Toast.LENGTH_LONG).show();
                     Log.e("Bitmap", "Unknown path");
                 }
 
-                if (filePath != null) {
-                    decodeFile(filePath);
+                if (filePathLoc != null) {
+                    decodeFile(filePathLoc);
                 } else {
                     bitmap = null;
                 }
@@ -185,9 +192,18 @@ public class MainActivity extends Activity
 
     class ImageUploadTask extends AsyncTask<Void, Void,String> {
     @SuppressWarnings("unused")
+
+    String filePath;
+    ImageUploadTask(String filePath)
+    {
+            this.filePath = filePath;
+    }
     @Override
     protected String doInBackground(Void... unsued) {
+
         InputStream is;
+        /*
+
         BitmapFactory.Options bfo;
         Bitmap bitmapOrg;
         ByteArrayOutputStream bao ;
@@ -203,7 +219,7 @@ public class MainActivity extends Activity
         ArrayList nameValuePairs = new ArrayList();
         nameValuePairs.add(new BasicNameValuePair("image",ba1));
         nameValuePairs.add(new BasicNameValuePair("cmd","image_android"));
-        Log.v("log_tag", System.currentTimeMillis()+".jpg");
+        Log.i("SnapShop", System.currentTimeMillis()+".jpg");
         try{
             HttpClient httpclient = new DefaultHttpClient();
             HttpPost httppost = new HttpPost("http://uploads.im/api");
@@ -214,12 +230,40 @@ public class MainActivity extends Activity
             HttpEntity entity = response.getEntity();
             is = entity.getContent();
             getStringContent(is,response);
-            Log.v("log_tag", "In the try Loop" );
+            Log.i("SnapShop", "In the try Loop" );
         }catch(Exception e){
             Log.v("log_tag", "Error in http connection "+e.toString());
         }
+
+        */
+        try {
+            /*
+            HttpClient httpclient = new DefaultHttpClient();
+            httpclient.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
+
+            HttpPost httppost = new HttpPost("http://uploads.im/api");
+            File file = new File(filePath);
+            Log.i("SnapShop","*********"+filePath);
+            MultipartEntity mpEntity = new MultipartEntity();
+            ContentBody cbFile = new FileBody(file, "image/jpeg");
+            mpEntity.addPart("userfile", cbFile);
+
+
+            httppost.setEntity(mpEntity);
+            System.out.println("executing request " + httppost.getRequestLine());
+            HttpResponse response = httpclient.execute(httppost);
+            HttpEntity resEntity = response.getEntity();
+            is = resEntity.getContent();
+            getStringContent(is,response);
+            */
+
+            
+        }catch(Exception e){
+            Log.v("log_tag", "Error in http connection "+e.toString());
+        }
+
         return "Success";
-// (null);
+
     }
 
     private String getStringContent(InputStream ips,HttpResponse response) throws Exception
