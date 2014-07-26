@@ -53,6 +53,7 @@ public class MainActivity extends Activity
 {
     private static final int PICK_IMAGE = 1;
     private static final int PICK_Camera_IMAGE = 2;
+    public final static String EXTRA_MESSAGE = "com.ebay.SnapShop.MESSAGE";
     private ImageView imgView;
     private Button upload,cancel;
     private Bitmap bitmap;
@@ -60,6 +61,7 @@ public class MainActivity extends Activity
     String selectedImagePath;
     Uri imageUri;
     String filePathLoc = null;
+    MainActivity myActivity ;
 
     MediaPlayer mp=new MediaPlayer();
 
@@ -69,6 +71,7 @@ public class MainActivity extends Activity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        myActivity = this;
 
         imgView = (ImageView) findViewById(R.id.ImageView);
         upload = (Button) findViewById(R.id.imguploadbtn);
@@ -83,7 +86,7 @@ public class MainActivity extends Activity
                 } else {
                     dialog = ProgressDialog.show(MainActivity.this, "Uploading",
                             "Please wait...", true);
-                    new ImageUploadTask(imageUri,filePathLoc).execute();
+                    new ImageUploadTask(myActivity,imageUri,filePathLoc).execute();
                 }
             }
         });
@@ -200,17 +203,21 @@ public class MainActivity extends Activity
 
     private static final String UPLOAD_URL = "https://api.imgur.com/3/image";
     private Uri mImageUri;
+    private Activity myActivity;
 
     private String filePath;
-    ImageUploadTask(Uri imageUri, String filePath)
+    ImageUploadTask(Activity myActivity,Uri imageUri, String filePath)
     {
         this.mImageUri = imageUri;
         this.filePath = filePath;
+        this.myActivity = myActivity;
     }
     @Override
     protected String doInBackground(Void... unsued) {
 
+
         InputStream imageIn;
+
         try {
 
             try {
@@ -256,36 +263,47 @@ public class MainActivity extends Activity
         return "Success";
 
     }
-    protected String onInput(InputStream in) throws Exception {
-        StringBuilder sb = new StringBuilder();
-        Scanner scanner = new Scanner(in);
-        while (scanner.hasNext()) {
-            sb.append(scanner.next());
+        protected String onInput(InputStream in) throws Exception {
+            StringBuilder sb = new StringBuilder();
+            Scanner scanner = new Scanner(in);
+            while (scanner.hasNext()) {
+                sb.append(scanner.next());
+            }
+
+            JSONObject root = new JSONObject(sb.toString());
+            Log.i("SnapShop",root.toString());
+            String link = root.getJSONObject("data").getString("link");
+            String deletehash = root.getJSONObject("data").getString("deletehash");
+
+            Log.i("SnapShop", "new imgur url: " + link);
+
+            //start an activity and pass this as an intent
+
+            sendMessage(link);
+
+            return link;
+        }
+        private void sendMessage(String link) {
+            Intent intent = new Intent(myActivity, SearchResultActivity.class);
+            intent.putExtra(EXTRA_MESSAGE, link);
+            startActivity(intent);
+        }
+        private int copy(InputStream input, OutputStream output) throws IOException {
+            byte[] buffer = new byte[8192];
+            int count = 0;
+            int n = 0;
+            while (-1 != (n = input.read(buffer))) {
+                output.write(buffer, 0, n);
+                count += n;
+            }
+            return count;
         }
 
-        JSONObject root = new JSONObject(sb.toString());
-        Log.i("SnapShop",root.toString());
-        String link = root.getJSONObject("data").getString("link");
-        Log.i("SnapShop", "new imgur url: " + link);
-        return link;
-    }
+        public void addToHttpURLConnection(HttpURLConnection conn) {
 
-    private int copy(InputStream input, OutputStream output) throws IOException {
-        byte[] buffer = new byte[8192];
-        int count = 0;
-        int n = 0;
-        while (-1 != (n = input.read(buffer))) {
-            output.write(buffer, 0, n);
-            count += n;
+            String clientID = "48e960fea53ed6b";
+            conn.setRequestProperty("Authorization", "Client-ID " + clientID);
         }
-        return count;
-    }
-
-    public void addToHttpURLConnection(HttpURLConnection conn) {
-
-        String clientID = "48e960fea53ed6b";
-        conn.setRequestProperty("Authorization", "Client-ID " + clientID);
-    }
     private String getStringContent(InputStream ips,HttpResponse response) throws Exception
     {
         BufferedReader buf = new BufferedReader(new InputStreamReader(ips,"UTF-8"));
