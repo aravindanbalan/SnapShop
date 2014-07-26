@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.text.TextUtils;
 import org.apache.http.entity.mime.MultipartEntity;
 import android.os.Bundle;
 import android.os.Environment;
@@ -36,10 +37,14 @@ import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.CoreProtocolPNames;
+import org.json.JSONObject;
 
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Scanner;
 
 /**
  * Created by arbalan on 7/26/14.
@@ -78,7 +83,7 @@ public class MainActivity extends Activity
                 } else {
                     dialog = ProgressDialog.show(MainActivity.this, "Uploading",
                             "Please wait...", true);
-                    new ImageUploadTask(filePathLoc).execute();
+                    new ImageUploadTask(imageUri,filePathLoc).execute();
                 }
             }
         });
@@ -193,71 +198,57 @@ public class MainActivity extends Activity
     class ImageUploadTask extends AsyncTask<Void, Void,String> {
     @SuppressWarnings("unused")
 
-    String filePath;
-    ImageUploadTask(String filePath)
+    private static final String UPLOAD_URL = "https://api.imgur.com/3/image";
+    private Uri mImageUri;
+
+    private String filePath;
+    ImageUploadTask(Uri imageUri, String filePath)
     {
-            this.filePath = filePath;
+        this.mImageUri = imageUri;
+        this.filePath = filePath;
     }
     @Override
     protected String doInBackground(Void... unsued) {
 
-        InputStream is;
-        /*
-
-        BitmapFactory.Options bfo;
-        Bitmap bitmapOrg;
-        ByteArrayOutputStream bao ;
-
-        bfo = new BitmapFactory.Options();
-        bfo.inSampleSize = 2;
-//bitmapOrg = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory() + "/" + customImage, bfo);
-
-        bao = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, bao);
-        byte [] ba = bao.toByteArray();
-        String ba1 = Base64.encodeToString(ba, Base64.DEFAULT);
-        ArrayList nameValuePairs = new ArrayList();
-        nameValuePairs.add(new BasicNameValuePair("image",ba1));
-        nameValuePairs.add(new BasicNameValuePair("cmd","image_android"));
-        Log.i("SnapShop", System.currentTimeMillis()+".jpg");
-        try{
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost("http://uploads.im/api");
-            httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-            HttpResponse response = httpclient.execute(httppost);
-
-            Log.i("SnapShop","************ Response :"+response.toString());
-            HttpEntity entity = response.getEntity();
-            is = entity.getContent();
-            getStringContent(is,response);
-            Log.i("SnapShop", "In the try Loop" );
-        }catch(Exception e){
-            Log.v("log_tag", "Error in http connection "+e.toString());
-        }
-
-        */
+        InputStream imageIn;
         try {
-            /*
-            HttpClient httpclient = new DefaultHttpClient();
-            httpclient.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
 
-            HttpPost httppost = new HttpPost("http://uploads.im/api");
-            File file = new File(filePath);
-            Log.i("SnapShop","*********"+filePath);
-            MultipartEntity mpEntity = new MultipartEntity();
-            ContentBody cbFile = new FileBody(file, "image/jpeg");
-            mpEntity.addPart("userfile", cbFile);
+            try {
+                imageIn = getContentResolver().openInputStream(mImageUri);
+
+                HttpURLConnection conn = null;
+                InputStream responseIn = null;
+                conn = (HttpURLConnection) new URL(UPLOAD_URL).openConnection();
+                conn.setDoOutput(true);
+
+                addToHttpURLConnection(conn);
+                OutputStream out = conn.getOutputStream();
+                copy(imageIn, out);
+                out.flush();
+                out.close();
+
+                if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    responseIn = conn.getInputStream();
+                    return onInput(responseIn);
+                }
+                else {
+                    Log.i("SnapShop", "responseCode=" + conn.getResponseCode());
+                    responseIn = conn.getErrorStream();
+                    StringBuilder sb = new StringBuilder();
+                    Scanner scanner = new Scanner(responseIn);
+                    while (scanner.hasNext()) {
+                        sb.append(scanner.next());
+                    }
+                    Log.i("SnapShop", "error response: " + sb.toString());
+                    return null;
+                }
+
+            } catch (FileNotFoundException e) {
+                Log.e("SnapShop", "could not open InputStream", e);
+                return null;
+            }
 
 
-            httppost.setEntity(mpEntity);
-            System.out.println("executing request " + httppost.getRequestLine());
-            HttpResponse response = httpclient.execute(httppost);
-            HttpEntity resEntity = response.getEntity();
-            is = resEntity.getContent();
-            getStringContent(is,response);
-            */
-
-            
         }catch(Exception e){
             Log.v("log_tag", "Error in http connection "+e.toString());
         }
@@ -265,7 +256,36 @@ public class MainActivity extends Activity
         return "Success";
 
     }
+    protected String onInput(InputStream in) throws Exception {
+        StringBuilder sb = new StringBuilder();
+        Scanner scanner = new Scanner(in);
+        while (scanner.hasNext()) {
+            sb.append(scanner.next());
+        }
 
+        JSONObject root = new JSONObject(sb.toString());
+        Log.i("SnapShop",root.toString());
+        String link = root.getJSONObject("data").getString("link");
+        Log.i("SnapShop", "new imgur url: " + link);
+        return link;
+    }
+
+    private int copy(InputStream input, OutputStream output) throws IOException {
+        byte[] buffer = new byte[8192];
+        int count = 0;
+        int n = 0;
+        while (-1 != (n = input.read(buffer))) {
+            output.write(buffer, 0, n);
+            count += n;
+        }
+        return count;
+    }
+
+    public void addToHttpURLConnection(HttpURLConnection conn) {
+
+        String clientID = "48e960fea53ed6b";
+        conn.setRequestProperty("Authorization", "Client-ID " + clientID);
+    }
     private String getStringContent(InputStream ips,HttpResponse response) throws Exception
     {
         BufferedReader buf = new BufferedReader(new InputStreamReader(ips,"UTF-8"));
