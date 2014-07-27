@@ -1,12 +1,13 @@
 <component name="libraryTable">
-  <library name="commons-codec-1.6">
+  <library name="commons-codec-1.61">
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/libs/commons-codec-1.6.jar!/" />
       <root url="jar://$PROJECT_DIR$/libs/commons-logging-1.1.3.jar!/" />
-      <root url="jar://$PROJECT_DIR$/libs/fluent-hc-4.3.4.jar!/" />
-      <root url="jar://$PROJECT_DIR$/libs/httpclient-4.3.4.jar!/" />
       <root url="jar://$PROJECT_DIR$/libs/httpclient-cache-4.3.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/httpmime-4.3.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/org.json-20120521.jar!/" />
       <root url="jar://$PROJECT_DIR$/libs/httpcore-4.3.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/httpclient-4.3.4.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
