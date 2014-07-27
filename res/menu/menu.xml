@@ -7,7 +7,7 @@
               android:title="@string/camera"
               android:showAsAction="ifRoom"/>
         <item android:id="@+id/menu_gallery"
-              android:icon="@drawable/gallery"
+              android:icon="@drawable/galleryicon"
               android:title="@string/gallery"
               android:showAsAction="ifRoom" />
     </menu>

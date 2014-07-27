@@ -40,7 +40,7 @@
                     android:id="@+id/imguploadbtn"
                     android:layout_height="wrap_content"
                     android:layout_margin="5dip"
-                    android:text="Upload" />
+                    android:text="SnapSearch" />
             <Button
                     android:layout_width="fill_parent"
                     android:id="@+id/imgcancelbtn"

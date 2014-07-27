@@ -59,7 +59,6 @@ public class MainActivity extends Activity
     String filePathLoc = null;
     MainActivity myActivity ;
 
-    MediaPlayer mp=new MediaPlayer();
 
     /** Called when the activity is first created. */
 
@@ -80,7 +79,7 @@ public class MainActivity extends Activity
                     Toast.makeText(getApplicationContext(),
                             "Please select image", Toast.LENGTH_SHORT).show();
                 } else {
-                    dialog = ProgressDialog.show(MainActivity.this, "Uploading",
+                    dialog = ProgressDialog.show(MainActivity.this, "Searching",
                             "Please wait...", true);
                     new ImageUploadTask(myActivity,imageUri,filePathLoc).execute();
                 }
