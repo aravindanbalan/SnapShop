@@ -292,10 +292,8 @@ public class MainActivity extends Activity
         public void getSearchKeyWords(String imageUrl) {
             @SuppressWarnings("deprecation")
             HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(
-                    "https://camfind.p.mashape.com/image_requests");
-            httppost.setHeader("X-Mashape-Key",
-                    "");                                //Add your Mashape key here
+            HttpPost httppost = new HttpPost("https://camfind.p.mashape.com/image_requests");
+            httppost.setHeader("X-Mashape-Key",GetProperties.getInstance().getCamFindAPIKey());                                
             String token = "";
             try {
                 // Add your data
@@ -353,8 +351,7 @@ public class MainActivity extends Activity
                         //System.out.println(url);
                         HttpClient client = new DefaultHttpClient();
                         HttpGet request = new HttpGet(url);
-                        request.setHeader("X-Mashape-Key",
-                                "");                                            //Add your mashape key here
+                        request.setHeader("X-Mashape-Key",GetProperties.getInstance().getCamFindAPIKey()); 
                         org.apache.http.HttpResponse response = client
                                 .execute(request);
                         HttpEntity entity = response.getEntity();
