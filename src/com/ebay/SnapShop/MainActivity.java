@@ -49,6 +49,7 @@ public class MainActivity extends Activity
     private static final int PICK_IMAGE = 1;
     private static final int PICK_Camera_IMAGE = 2;
     public final static String EXTRA_MESSAGE = "com.ebay.SnapShop.MESSAGE";
+    public final static String EXTRA_URL = "com.ebay.SnapShop.URL";
     private ImageView imgView;
     private Button upload,cancel;
     private Bitmap bitmap;
@@ -271,7 +272,6 @@ public class MainActivity extends Activity
             JSONObject root = new JSONObject(sb.toString());
             Log.i("SnapShop",root.toString());
             String link = root.getJSONObject("data").getString("link");
-            String deletehash = root.getJSONObject("data").getString("deletehash");
 
             Log.i("SnapShop", "new imgur url: " + link);
 
@@ -288,115 +288,6 @@ public class MainActivity extends Activity
         /*
         Cam find api - calls
          */
-       /*public void getSearchKeyWords(String imageUrl)
-       {
-           try
-           {
-               ClassLoader classLoader = MainActivity.class.getClassLoader();
-               URL resource = classLoader.getResource("org/apache/http/message/BasicLineFormatter.class");
-               Log.i("Snapshop","#######"+resource.toString());
-
-               Future<com.mashape.unirest.http.HttpResponse<JsonNode>> response =
-                       Unirest.post("https://camfind.p.mashape.com/image_requests")
-                               .header("X-Mashape-Key",
-                                       "dUsmUexyLjmshbZvf4t9kZNOUXv6p1J0sXYjsnHaGQhjtWb7dK")
-                               .field("focus[y]", "640") .field("image_request[altitude]",
-                               "27.912109375") .field("image_request[language]", "en")
-                               .field("image_request[latitude]", "35.8714220766008")
-                               .field("image_request[locale]", "en_US")
-                               .field("image_request[longitude]", "14.3583203002251")
-                               .field("image_request[remote_image_url]", imageUrl)
-                               .asJsonAsync(new com.mashape.unirest.http.async.Callback<JsonNode>()
-                               {
-                                   public void cancelled()
-                                   {
-                                       System.out.println("Cancelled");
-                                   }
-
-                                   @Override
-                                   public void completed(com.mashape.unirest.http.HttpResponse<JsonNode> response) {
-
-                                       try
-                                       {
-                                           JsonNode json = response.getBody();
-                                           JSONObject jsonobj = json.getObject();
-                                           String token  = jsonobj.getString("token");
-                                           String url = "https://camfind.p.mashape.com/image_responses/"+token;
-                                           System.out.println(url);
-                                           getKeyWords(url);
-
-                                           Unirest.shutdown();
-                                       }
-                                       catch(Exception e)
-                                       {
-                                           System.out.println("Exception in getting the token"+e.getMessage());
-                                       }
-                                   }
-
-                                   public void failed(UnirestException arg0) {
-
-                                       System.out.println("failed");
-                                   }
-
-                               });
-           }
-           catch(Exception e)
-           {
-               System.out.println("Exception in getting the token"+e.getMessage());
-
-           }
-
-       }
-        private String getKeyWords(String url)
-        {
-            com.mashape.unirest.http.HttpResponse<JsonNode> httpResponse = null;
-            String statusResponse = "not completed";
-            long startTime = System.currentTimeMillis();
-            long midTime = System.currentTimeMillis();
-            System.out.println("Reached 2nd class");
-            int count = 0;
-            while(statusResponse.equals("not completed") && (System.currentTimeMillis() - startTime)!=40000)
-            {
-                try
-                {
-                    if(System.currentTimeMillis() - midTime>5000)
-                    {
-                        count+=1;
-                        midTime = System.currentTimeMillis();
-                        httpResponse = Unirest.get(url).header("X-Mashape-Key", "dUsmUexyLjmshbZvf4t9kZNOUXv6p1J0sXYjsnHaGQhjtWb7dK").asJson();
-                        statusResponse = httpResponse.getBody().getObject().getString("status");
-                        System.out.println(statusResponse+"reponse"+httpResponse.getBody());
-                        if(httpResponse.getBody().getObject().getString("name")!=null) {
-                            setKeyWord(httpResponse.getBody().getObject().getString("name"));
-                            Intent intent = new Intent(myActivity, SearchResultActivity.class);
-                            intent.putExtra(EXTRA_MESSAGE, keyWord);
-                            startActivity(intent);
-                        }
-
-                    }
-
-                }
-                catch(Exception e)
-                {
-                    System.out.println(e.getMessage());
-                }
-            }
-
-            long endTime = System.currentTimeMillis();
-            System.out.println("Time taken: "+(endTime - startTime)+". Number of times called "+count);
-            String name = "blurry";
-            try
-            {
-                name = httpResponse.getBody().getObject().getString("name");
-                Unirest.shutdown();
-            }
-            catch(Exception e)
-            {
-                System.out.println("Exception in getting the response name"+e.getMessage());
-            }
-
-            return name;
-        }*/
 
         public void getSearchKeyWords(String imageUrl) {
             @SuppressWarnings("deprecation")
@@ -404,7 +295,7 @@ public class MainActivity extends Activity
             HttpPost httppost = new HttpPost(
                     "https://camfind.p.mashape.com/image_requests");
             httppost.setHeader("X-Mashape-Key",
-                    "dUsmUexyLjmshbZvf4t9kZNOUXv6p1J0sXYjsnHaGQhjtWb7dK");
+                    "");                                //Add your Mashape key here
             String token = "";
             try {
                 // Add your data
@@ -440,15 +331,15 @@ public class MainActivity extends Activity
                 }
                 JSONObject root = new JSONObject(sb.toString());
                 token = root.getString("token");
-                System.out.println(token);
+                //System.out.println(token);
 
             } catch (Exception e) {
-                System.out.println(e.getMessage() + ":");
+                //System.out.println(e.getMessage() + ":");
                 e.printStackTrace();
             }
 
             String url = "https://camfind.p.mashape.com/image_responses/" + token;
-            System.out.println(url);
+            //System.out.println(url);
             String status = "not completed";
             long startTime = System.currentTimeMillis();
             long midTime = System.currentTimeMillis();
@@ -458,12 +349,12 @@ public class MainActivity extends Activity
                 try {
                     if (System.currentTimeMillis() - midTime > 5000) {
                         count+=1;
-                        midTime = System.currentTimeMillis();
-                        System.out.println(url);
+
+                        //System.out.println(url);
                         HttpClient client = new DefaultHttpClient();
                         HttpGet request = new HttpGet(url);
                         request.setHeader("X-Mashape-Key",
-                                "dUsmUexyLjmshbZvf4t9kZNOUXv6p1J0sXYjsnHaGQhjtWb7dK");
+                                "");                                            //Add your mashape key here
                         org.apache.http.HttpResponse response = client
                                 .execute(request);
                         HttpEntity entity = response.getEntity();
@@ -478,24 +369,28 @@ public class MainActivity extends Activity
                             }
                             JSONObject root = new JSONObject(sb.toString());
                             status = root.getString("status");
-                            System.out.println(status);
+                            //System.out.println(status);
                             if (root.has("name"))
                                 name = root.getString("name");
+
+                            midTime = System.currentTimeMillis();
                         }
 
                     }
                 } catch (Exception e) {
-                    System.out.println(e.getMessage());
+                    //System.out.println(e.getMessage());
                     e.printStackTrace();
                 }
-            } while (status.equals("not completed")&&(System.currentTimeMillis() - startTime) <= 40000);
+            } while (status.equals("not completed")&&count<=10);
+
             long endTime = System.currentTimeMillis();
-            System.out.println("Time taken: " + (endTime - startTime)
-                    + ". Number of times called " + count);
-            System.out.println(name);
+            //System.out.println("Time taken: " + (endTime - startTime)
+               //     + ". Number of times called " + count);
+            //System.out.println(name);
             setKeyWord(name);
-            Intent intent = new Intent(myActivity, SearchResultActivity.class);
+            Intent intent = new Intent(myActivity, TabActivity.class);
             intent.putExtra(EXTRA_MESSAGE, keyWord);
+            intent.putExtra(EXTRA_URL, imageUrl);
             startActivity(intent);
 
         }

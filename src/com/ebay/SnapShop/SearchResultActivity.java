@@ -77,6 +77,7 @@ public class SearchResultActivity extends Activity{
 
 }
 
+/*
 class MyWebViewClient extends WebViewClient {
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -86,3 +87,4 @@ class MyWebViewClient extends WebViewClient {
         return true;
     }
 }
+*/

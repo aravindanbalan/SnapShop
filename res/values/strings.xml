@@ -4,4 +4,6 @@
     <string name="camera">Camera</string>
     <string name="gallery">Gallery</string>
     <string name="home">Home</string>
+    <string name="fragment1">SnapBuy</string>
+    <string name="fragment2">SnapSell</string>
 </resources>
